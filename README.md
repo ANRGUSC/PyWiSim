@@ -20,7 +20,7 @@ Everything else — routing, consensus, leader election — is your code.
 ## Architecture
 
 <p align="center">
-  <img src="architecture.png" alt="PyWiSim Architecture" width="500">
+  <img src="misc/architecture.png" alt="PyWiSim Architecture" width="500">
 </p>
 
 PyWiSim has three classes:
