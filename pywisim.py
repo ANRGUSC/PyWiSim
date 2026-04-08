@@ -28,7 +28,7 @@ class WirelessNetwork:
     def log(self, s):
         if self.verbose: print(f"[{self.loop.time:.2f}] {s}")
     def dist(self, a, b): return math.hypot(self.pos[a][0]-self.pos[b][0], self.pos[a][1]-self.pos[b][1])
-    def neighbors(self, nid): return [o for o in self.nodes if o != nid and self.dist(nid, o) <= self.R]
+    def neighbors(self, nid): return [o for o in self.nodes if o != nid and self.dist(nid, o) <= (3*self.R if self.loss else self.R)]
     def _busy(self, nid):
         return any(s <= self.loop.time < e and self.dist(nid, snd) <= self.R for _, s, e, snd in self._txs)
     def _send(self, sender, targets, msg):
@@ -43,7 +43,7 @@ class WirelessNetwork:
     def _deliver(self, sender, recv, msg, mid):
         if not any(m == mid for m, *_ in self._txs): return
         d = self.dist(sender, recv)
-        if d > self.R: return
-        if self.loss and self.rng.random() > (1 - self.loss) * (1 - .5 * (d / self.R) ** 2): return
+        if not self.loss and d > self.R: return
+        if self.loss and self.rng.random() > (1-self.loss)/(1+math.exp(4/self.R*(d-2*self.R))): return
         self.log(f"{recv} <- {sender}: {msg}")
         self.nodes[recv].on_receive(msg, sender)
