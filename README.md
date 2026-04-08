@@ -15,7 +15,12 @@ The simulator provides:
 - Broadcast and unicast primitives
 - A discrete-event engine for scheduling
 
-Everything else — routing, consensus, leader election — is your code.
+Two optional companion modules extend pywisim to mobile and intermittently connected networks — without touching the core:
+
+- **`mobility.py`** (~33 lines) — moves nodes over time for MANET simulations
+- **`encounter.py`** (~42 lines) — schedules random pairwise encounters for DTN/ICMN simulations
+
+Protocols use the same `Node` API (`on_receive`, `broadcast`, `unicast`, `schedule`) across all three settings. Everything else — routing, consensus, epidemic forwarding — is your code.
 
 ## Architecture
 
@@ -109,9 +114,69 @@ Classic distributed transaction protocol adapted for wireless. A coordinator sen
 
 Key idea: atomic commitment — if any participant votes NO, the entire transaction aborts.
 
+---
+
+## Mobile and Intermittently Connected Networks
+
+The core simulator assumes a static topology. Two optional companion modules extend it to dynamic networks while preserving the same `Node` API — protocols are written with `on_receive`, `broadcast`, `unicast`, and `schedule` regardless of the network model.
+
+### Mobility: MANETs (`mobility.py`)
+
+`MobilityManager` periodically updates node positions via the event loop. Since `neighbors()`, `dist()`, and the loss model all read positions dynamically, moving a node automatically changes its connectivity — no topology rebuild needed.
+
+Two standard models are included:
+- **Random Waypoint** — each node picks a random destination within bounds, moves toward it at constant speed, then picks a new destination on arrival.
+- **Random Walk** — each node moves a fixed step in a random direction at each interval.
+
+```python
+from mobility import MobilityManager
+
+mob = MobilityManager(net, interval=1.0, speed=0.5, bounds=(10, 10))
+mob.start('waypoint')   # or 'walk'
+```
+
+#### Example: AODV over a MANET (`examples/aodv_mobility.py`)
+
+Demonstrates reactive routing in a network where topology changes. Seven nodes move via random waypoint. The simulation runs in two phases:
+
+1. **Phase 1** — nodes move for 5 seconds, mobility pauses. AODV discovers a route from A to G (e.g., A → B → F → G).
+2. **Phase 2** — nodes move for another 15 seconds, topology reshuffles. AODV runs again and finds a completely different route (e.g., A → C → G).
+
+The protocol code is identical to the static AODV example — only the network underneath has changed.
+
+### Encounters: ICMNs / DTNs (`encounter.py`)
+
+`EncounterManager` models intermittently connected mobile networks where nodes are typically out of range and only communicate during brief pairwise encounters. Behind the scenes, non-encountering nodes are kept far apart (no radio neighbors). When a pair encounters, both are co-located so that standard `unicast`/`broadcast` works through pywisim's normal `_send`/`_deliver` path. After the encounter window, positions are restored.
+
+Encounters follow a Poisson process with a configurable rate.
+
+```python
+from encounter import EncounterManager
+
+enc = EncounterManager(net, rate=1.5, duration=1.0)
+enc.start()
+```
+
+#### Example: Epidemic Flooding over an ICMN (`examples/epidemic_icmn.py`)
+
+Demonstrates store-and-forward epidemic dissemination across 8 nodes. Node A originates a file. Whenever two nodes encounter, each sends its buffered data to the other via `unicast` — pywisim delivers it losslessly. The file propagates hop by hop through chance encounters:
+
+```
+t=0.1  A originates file.pdf
+t=0.7  A encounters F → F gets the file
+t=2.9  E encounters G → G gets the file (via E, who got it from A earlier)
+  ...
+t=7.3  G encounters D → D gets the file (last node)
+```
+
+All 8 nodes eventually receive the file, with the propagation time depending on encounter patterns.
+
+---
+
 ## Features
 
 - **49 lines of simulator code** — read the whole thing in a few minutes
+- **Optional mobility and encounter modules** — ~33 and ~42 lines respectively, for MANET and DTN simulations
 - **Zero dependencies** — only Python standard library (`heapq`, `math`, `random`)
 - **Discrete-event simulation** — priority queue drives time, no busy loops
 - **Distance-based topology** — neighbors determined by Euclidean distance and transmission range
@@ -141,6 +206,16 @@ Key idea: atomic commitment — if any participant votes NO, the entire transact
 - `add_node(node, x, y)` — place a node at coordinates `(x, y)`
 - `neighbors(nid)` — list of nodes within transmission range
 - `log(msg)` — print timestamped message (if verbose)
+
+### `MobilityManager` (`mobility.py`)
+- `__init__(net, interval=1.0, speed=0.5, bounds=(10, 10))`
+- `start(model='waypoint')` — begin moving nodes (`'waypoint'` or `'walk'`)
+- `stop()` — pause movement
+
+### `EncounterManager` (`encounter.py`)
+- `__init__(net, rate=1.0, duration=1.0)` — Poisson encounter rate; duration of each encounter window
+- `start()` — begin scheduling encounters
+- `stop()` — stop scheduling encounters
 
 ## License
 
