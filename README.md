@@ -120,11 +120,10 @@ Key idea: atomic commitment — if any participant votes NO, the entire transact
 
 The core simulator assumes a static topology. Two optional companion modules extend it to dynamic networks while preserving the same `Node` API — protocols are written with `on_receive`, `broadcast`, `unicast`, and `schedule` regardless of the network model.
 
-<p align="center">
-  <img src="misc/mobility_architecture.png" alt="Mobility Architecture" width="420">
-  &nbsp;&nbsp;
-  <img src="misc/encounter_architecture.png" alt="Encounter Architecture" width="420">
-</p>
+<table><tr>
+<td><img src="misc/mobility_architecture.png" alt="Mobility Architecture" width="380"></td>
+<td><img src="misc/encounter_architecture.png" alt="Encounter Architecture" width="380"></td>
+</tr></table>
 
 ### Mobility: MANETs (`mobility.py`)
 
