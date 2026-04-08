@@ -120,6 +120,12 @@ Key idea: atomic commitment — if any participant votes NO, the entire transact
 
 The core simulator assumes a static topology. Two optional companion modules extend it to dynamic networks while preserving the same `Node` API — protocols are written with `on_receive`, `broadcast`, `unicast`, and `schedule` regardless of the network model.
 
+<p align="center">
+  <img src="misc/mobility_architecture.png" alt="Mobility Architecture" width="420">
+  &nbsp;&nbsp;
+  <img src="misc/encounter_architecture.png" alt="Encounter Architecture" width="420">
+</p>
+
 ### Mobility: MANETs (`mobility.py`)
 
 `MobilityManager` periodically updates node positions via the event loop. Since `neighbors()`, `dist()`, and the loss model all read positions dynamically, moving a node automatically changes its connectivity — no topology rebuild needed.
