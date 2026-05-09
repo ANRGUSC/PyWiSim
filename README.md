@@ -12,7 +12,15 @@ No dependency hell. No XML configuration. No 200-page manual. Just subclass `Nod
 The two new routing protocols that have been implmented alongside aodv_mobilitypy are the dsr_mobility.py and dsdv_mobility.py. 
 To run a simulation of all three (which is essentially just comparing reactive routing protocols to proactive routing protocols) run the performance_comparison.py from the example folder in your terminal. It will print the output in the terminal and a plot of the results is outputed as a png.
 
+```bash
+python examples/performance_comparison.py
+```
+
 Because the two reactive protocols perform so similarly there is another method to test the two and see their respective differences. Just run aodv_vs_dsr.py from the example folder in your terminal. It will similarly print the output into the terminal and save a plot of the results of the test as a png.
+
+```bash
+python examples/aodv_vs_dsr.py 
+```
 
 ## Overview
 
