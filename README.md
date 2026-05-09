@@ -1,10 +1,18 @@
-# PyWiSim
+# PyWiSim with VANet Testing!
 
 **A minimal wireless distributed protocol simulator in Python.**
 
 The entire simulator is under 50 lines of Python.
 
 No dependency hell. No XML configuration. No 200-page manual. Just subclass `Node`, override `on_receive`, and start building distributed protocols over a simulated wireless network.
+
+
+## Running the VANet Simulations
+
+The two new routing protocols that have been implmented alongside aodv_mobilitypy are the dsr_mobility.py and dsdv_mobility.py. 
+To run a simulation of all three (which is essentially just comparing reactive routing protocols to proactive routing protocols) run the performance_comparison.py from the example folder in your terminal. It will print the output in the terminal and a plot of the results is outputed as a png.
+
+Because the two reactive protocols perform so similarly there is another method to test the two and see their respective differences. Just run aodv_vs_dsr.py from the example folder in your terminal. It will similarly print the output into the terminal and save a plot of the results of the test as a png.
 
 ## Overview
 
